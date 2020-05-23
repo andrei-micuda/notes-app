@@ -1,18 +1,20 @@
 {
-  "name": "notesapp-api",
+  "name": "micu-notes",
   "version": "1.0.0",
-  "description": "NotesApp API",
+  "engines": {
+    "node": "12.16.3"
+  },
+  "description": "Web application for taking and storing notes",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js"
   },
   "keywords": [
-    "notes",
-    "api"
+    "notes"
   ],
   "author": "Micuda Andrei",
-  "license": "ISC",
+  "license": "MIT",
   "nodemonConfig": {
     "ignore": [
       "data/*"
