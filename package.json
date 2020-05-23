@@ -1,15 +1,11 @@
 {
   "name": "micu-notes",
   "version": "1.0.0",
-  "engines": {
-    "node": "12.16.3"
-  },
   "description": "Web application for taking and storing notes",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "dev": "nodemon app.js",
-    "preinstall": "npm config set dist-url https://nodejs.org/download/release/"
+    "dev": "nodemon app.js"
   },
   "keywords": [
     "notes"
@@ -25,7 +21,7 @@
     "nodemon": "^2.0.3"
   },
   "dependencies": {
-    "bcrypt": "^4.0.1",
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "uuid": "^8.0.0"
