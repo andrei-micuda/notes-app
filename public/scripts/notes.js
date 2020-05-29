@@ -23,10 +23,17 @@ if (!localStorage.getItem('rememberMe') && !sessionStorage.getItem('loggedIn')) 
     if (userInfo.logCount === 0) {
       lastLogin.innerHTML = '<p>This is the first time you log in.</p>'
     } else {
+      const lastLoginDate = new Date(userInfo.lastTime);
+      const lastLoginString = lastLoginDate.getDate() + "/" +
+        (lastLoginDate.getMonth() + 1).toString().padStart(2, '0') + "/" +
+        lastLoginDate.getFullYear() + " @ " +
+        lastLoginDate.getHours().toString().padStart(2, '0') + ":" +
+        lastLoginDate.getMinutes().toString().padStart(2, '0') + ":" +
+        lastLoginDate.getSeconds().toString().padStart(2, '0')
       lastLogin.innerHTML = `
       <p>You've logged in ${userInfo.logCount} times!</p>
       <p>Last login:</p>
-      <p>Date: ${userInfo.lastTime}</p>
+      <p>Date: ${lastLoginString}</p>
       <p>IP: ${userInfo.lastIP}</p>
       <hr>
       <p> Made with♥ by <a href = "https://github.com/andrei-micuda"> Andrei Micuda </a></p> `;

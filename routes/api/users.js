@@ -1,9 +1,18 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const uuid = require('uuid');
+const nodemailer = require('nodemailer');
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'andrei.micuda.dev@gmail.com',
+    pass: 'bxfvumcyoiluyvzf'
+  }
+});
 
 const router = express.Router();
 const saltRounds = 10;
+const loginAttempts = 5;
 
 const userData = require('../../Users');
 let users;
@@ -38,14 +47,7 @@ async function readUsers() {
         }
         user.lastIP = ip;
 
-        let currentdate = new Date();
-        const newLastTime = currentdate.getDate() + "/" +
-          (currentdate.getMonth() + 1).toString().padStart(2, '0') + "/" +
-          currentdate.getFullYear() + " @ " +
-          currentdate.getHours().toString().padStart(2, '0') + ":" +
-          currentdate.getMinutes().toString().padStart(2, '0') + ":" +
-          currentdate.getSeconds().toString().padStart(2, '0');
-        user.lastTime = newLastTime;
+        user.lastTime = new Date();
 
         user.logCount = user.logCount ? user.logCount + 1 : 1;
 
@@ -53,9 +55,45 @@ async function readUsers() {
 
         await userData.writeAll(users);
       } else {
+        //* if the passwords don't match
+
+        if (user.loginAttempts) {
+          user.loginAttempts.push(new Date());
+          if (user.loginAttempts.length == loginAttempts + 1) {
+            user.loginAttempts.shift();
+          }
+        } else {
+          user.loginAttempts = [new Date()]
+        }
+        //* get the number of failed logins in the last 5 minutes
+        let failedAttempts = user.loginAttempts.filter(loginAtt => {
+          return (new Date() - new Date(loginAtt)) / 1000 < (3 * 60)
+        }).length;
+
+        //* if no more login attempts left, send an email to the user to notify
+        if (loginAttempts - failedAttempts === 0) {
+          const mailOptions = {
+            from: 'andrei.micuda.dev@gmail.com',
+            to: user.email,
+            subject: 'Looks like someone is trying to access your account',
+            text: `Hello ${user.fullName}! We have detected multiple failed login attempts into your account, if this was you, please ignore this email.`
+          };
+
+          transporter.sendMail(mailOptions, (err, data) => {
+            if (err) {
+              console.log(err);
+            } else {
+              console.log('Email sent: ' + data.response);
+            }
+          });
+        }
+
         res.json({
-          found: false
+          found: false,
+          attempts: loginAttempts - failedAttempts
         });
+
+        userData.writeAll(users);
       }
     } else {
       res.status(400).json({
@@ -93,6 +131,23 @@ async function readUsers() {
       });
     } else {
       console.log('User registered!');
+
+      //* send confirmation email to user
+      const mailOptions = {
+        from: 'andrei.micuda.dev@gmail.com',
+        to: req.body.email,
+        subject: 'Your Notes App account has been created',
+        text: `Hello ${req.body.fullName}! You account has been succesfully created. Now you can use the app to store all your notes!`
+      };
+
+      transporter.sendMail(mailOptions, (err, data) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log('Email sent: ' + data.response);
+        }
+      });
+
       users.push(newUser);
       res.json({
         msg: 'User registered!'
